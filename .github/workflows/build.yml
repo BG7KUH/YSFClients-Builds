@@ -92,8 +92,10 @@ jobs:
         include:
           - arch: x86
             platform: x86
+            triplet: x86-windows-static
           - arch: x64
             platform: x64
+            triplet: x64-windows-static
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -110,7 +112,7 @@ jobs:
           $vcpkgRoot = $env:VCPKG_INSTALLATION_ROOT
           if (-not $vcpkgRoot) { $vcpkgRoot = "C:\\vcpkg" }
           if (-not (Test-Path $vcpkgRoot)) { throw "vcpkg not found at $vcpkgRoot" }
-          $triplet = if ("${{ matrix.platform }}" -eq "Win32") { "x86-windows-static" } else { "x64-windows-static" }
+          $triplet = "${{ matrix.triplet }}"
           & "$vcpkgRoot\\vcpkg.exe" install mosquitto nlohmann-json --triplet $triplet
 
       - name: Build
@@ -120,7 +122,7 @@ jobs:
           $ErrorActionPreference = "Stop"
           $vcpkgRoot = $env:VCPKG_INSTALLATION_ROOT
           if (-not $vcpkgRoot) { $vcpkgRoot = "C:\\vcpkg" }
-          $triplet = if ("${{ matrix.platform }}" -eq "Win32") { "x86-windows-static" } else { "x64-windows-static" }
+          $triplet = "${{ matrix.triplet }}"
           $env:VCPKG_INCLUDE = "$vcpkgRoot\\installed\\$triplet\\include"
           $env:VCPKG_LIB = "$vcpkgRoot\\installed\\$triplet\\lib"
           $mosquittoStatic = Join-Path $env:VCPKG_LIB "mosquitto_static.lib"
@@ -134,10 +136,11 @@ jobs:
             '    <ClCompile>',
             '      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>',
             '      <AdditionalIncludeDirectories>$(VCPKG_INCLUDE);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>',
+            '      <PreprocessorDefinitions>LIBMOSQUITTO_STATIC;MOSQUITTO_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>',
             '    </ClCompile>',
             '    <Link>',
             '      <AdditionalLibraryDirectories>$(VCPKG_LIB);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>',
-            '      <AdditionalDependencies>ws2_32.lib;mosquitto.lib;%(AdditionalDependencies)</AdditionalDependencies>',
+            '      <AdditionalDependencies>ws2_32.lib;mosquitto.lib;pthreadVC3.lib;libssl.lib;libcrypto.lib;crypt32.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>',
             '    </Link>',
             '  </ItemDefinitionGroup>',
             '</Project>'
