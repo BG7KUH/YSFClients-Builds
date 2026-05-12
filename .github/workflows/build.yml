@@ -133,15 +133,6 @@ jobs:
             '  <ItemDefinitionGroup>',
             '    <ClCompile>',
             '      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>',
-            '    </ClCompile>',
-            '  </ItemDefinitionGroup>',
-            '</Project>'
-          $targetsLines | Set-Content Directory.Build.targets
-          msbuild YSFClients.sln /m /p:Configuration=Release /p:Platform=${{ matrix.platform }} /p:VCPKG_INCLUDE="$env:VCPKG_INCLUDE" /p:VCPKG_LIB="$env:VCPKG_LIB" 2>&1 | Tee-Object -FilePath ..\artifacts\${{ matrix.arch }}\build.log
-          $targetsLines = @(
-            '<Project>',
-            '  <ItemDefinitionGroup>',
-            '    <ClCompile>',
             '      <AdditionalIncludeDirectories>$(VCPKG_INCLUDE);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>',
             '    </ClCompile>',
             '    <Link>',
@@ -152,6 +143,7 @@ jobs:
             '</Project>'
           )
           $targetsLines | Set-Content Directory.Build.targets
+          msbuild YSFClients.sln /m /p:Configuration=Release /p:Platform=${{ matrix.platform }} /p:VCPKG_INCLUDE="$env:VCPKG_INCLUDE" /p:VCPKG_LIB="$env:VCPKG_LIB" 2>&1 | Tee-Object -FilePath ..\artifacts\${{ matrix.arch }}\build.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Collect artifacts
